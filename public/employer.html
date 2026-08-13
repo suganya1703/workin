@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workin — Employer Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Tab bar ── */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 0.3rem;
+            border: 1px solid #334155;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #10b981;
+            color: #000;
+        }
+
+        /* ── Forms ── */
+        .form-group { margin-bottom: 0.9rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.83rem;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+        .form-control {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .form-control:focus { outline: none; border-color: #10b981; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+        /* ── Search filters ── */
+        .filter-bar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .filter-bar select, .filter-bar input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        /* ── Worker result card ── */
+        .worker-result {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .worker-result img {
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #10b981;
+            flex-shrink: 0;
+        }
+        .worker-result h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .result-meta { font-size: 0.8rem; color: #94a3b8; }
+
+        /* ── Job posting card ── */
+        .job-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .job-card h4 { font-size: 0.95rem; color: #fff; margin-bottom: 0.4rem; }
+        .job-meta { font-size: 0.8rem; color: #94a3b8; }
+        .job-status {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .job-status.OPEN       { background: rgba(16,185,129,0.15); color: #10b981; }
+        .job-status.MATCHED    { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .job-status.COMPLETED  { background: rgba(100,116,139,0.2); color: #94a3b8; }
+        .job-status.CANCELLED  { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+        /* ── Register banner ── */
+        .reg-banner {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        .reg-banner strong { color: #f59e0b; }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            background: #10b981;
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: none;
+            z-index: 2000;
+            max-width: 360px;
+        }
+
+        /* ── OTP row ── */
+        .otp-row { display: flex; gap: 0.5rem; }
+        .otp-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            letter-spacing: 0.25rem;
+            text-align: center;
+        }
+        .btn-amber {
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .otp-msg { font-size: 0.8rem; margin-top: 0.4rem; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-group">
+        <div class="logo-badge">W</div>
+        <div class="logo-text">
+            <h1>Workin — Employer Portal</h1>
+            <p>Post jobs &amp; find verified workers across Tamil Nadu</p>
+        </div>
+    </div>
+    <div style="display:flex; gap:0.8rem; align-items:center;">
+        <a href="/">
+            <button class="preset-btn">← Worker Dashboard</button>
+        </a>
+        <div class="pilot-badge">🏢 Employer View</div>
+    </div>
+</header>
+
+<div class="container" style="grid-template-columns:1fr; max-width:800px;">
+
+    <!-- ── Employer Registration / Login ─────────────────────────────── -->
+    <div class="card" id="empRegCard">
+        <div class="card-title">🏢 Employer Registration / Verification</div>
+        <div class="reg-banner">
+            <strong>New here?</strong> Register your business to post jobs. Already registered? Enter your phone to verify and continue.
+        </div>
+
+        <!-- Registration form -->
+        <div id="empRegForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Person Name *</label>
+                    <input type="text" id="empName" class="form-control" placeholder="e.g. Rajan M.">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="empPhone" class="form-control" placeholder="+91 98765 43210">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Business / Mandapam Name</label>
+                    <input type="text" id="empBusiness" class="form-control" placeholder="e.g. Sri Murugan Catering">
+                </div>
+                <div class="form-group">
+                    <label>District</label>
+                    <select id="empDistrict" class="form-control">
+                        <option value="Dindigul">Dindigul</option>
+                        <option value="Madurai">Madurai</option>
+                        <option value="Thanjavur">Thanjavur</option>
+                        <option value="Salem">Salem</option>
+                        <option value="Coimbatore">Coimbatore</option>
+                        <option value="Trichy">Trichy</option>
+                        <option value="Tirunelveli">Tirunelveli</option>
+                        <option value="Chennai">Chennai</option>
+                        <option value="Erode">Erode</option>
+                        <option value="Vellore">Vellore</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="registerEmployer()">Register &amp; Send OTP</button>
+        </div>
+
+        <!-- OTP step -->
+        <div id="empOtpSection" style="display:none; margin-top:1rem;">
+            <p style="font-size:0.9rem; color:#94a3b8; margin-bottom:0.8rem;">
+                Enter the OTP sent to <strong id="empPhoneDisplay"></strong>:
+            </p>
+            <div class="otp-row">
+                <input type="text" id="empOtpCode" class="otp-input" placeholder="- - - - - -" maxlength="6">
+                <button class="btn-amber" onclick="verifyEmpOTP()">Verify</button>
+            </div>
+            <p class="otp-msg" id="empOtpMsg"></p>
+        </div>
+
+        <!-- Verified state -->
+        <div id="empVerifiedBadge" style="display:none; margin-top:1rem;">
+            <div style="background:rgba(16,185,129,0.1); border:1px solid #10b981; border-radius:8px; padding:0.8rem; text-align:center;">
+                <span style="color:#10b981; font-weight:700; font-size:0.95rem;">
+                    ✓ Verified Employer — <span id="empVerifiedName"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Tabs ───────────────────────────────────────────────────────── -->
+    <div>
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('post', this)">📋 Post a Job</button>
+            <button class="tab-btn"        onclick="switchTab('search', this)">🔍 Search Workers</button>
+            <button class="tab-btn"        onclick="switchTab('jobs', this)">📂 My Job Postings</button>
+        </div>
+
+        <!-- ── TAB: Post a Job ─────────────────────────────────────── -->
+        <div id="tabPost" class="card">
+            <div class="card-title">📋 Post a New Job Requirement</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" id="jobTitle" class="form-control"
+                           placeholder="e.g. Catering Staff for Wedding">
+                </div>
+                <div class="form-group">
+                    <label>Skill Required *</label>
+                    <select id="jobSkill" class="form-control">
+                        <option value="catering">Catering / Function Helper</option>
+                        <option value="cooking">Cook / Biryani Specialist</option>
+                        <option value="loading">Loading / Unloading</option>
+                        <option value="electrician">Electrician / Wireman</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="cleaning">Cleaning / Housekeeping</option>
+                        <option value="painting">Painting</option>
+                        <option value="driver">Driver</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Number of Workers Needed *</label>
+                    <input type="number" id="jobCount" class="form-control" value="3" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Daily Rate per Worker (₹) *</label>
+                    <input type="number" id="jobRate" class="form-control" value="600" min="300">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Work Date *</label>
+                    <input type="date" id="jobDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Duration (Days)</label>
+                    <input type="number" id="jobDuration" class="form-control" value="1" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Location / Venue Name *</label>
+                    <input type="text" id="jobLocation" class="form-control"
+                           placeholder="e.g. Subam Kalyana Mandapam, Dindigul">
+                </div>
+                <div class="form-group">
+                    <label>District *</label>
+                    <select id="jobDistrict" class="form-control">
+                        <option value="Dindigul">Dindigul</option>
+                        <option value="Madurai">Madurai</option>
+                        <option value="Thanjavur">Thanjavur</option>
+                        <option value="Salem">Salem</option>
+                        <option value="Coimbatore">Coimbatore</option>
+                        <option value="Trichy">Trichy</option>
+                        <option value="Tirunelveli">Tirunelveli</option>
+                        <option value="Chennai">Chennai</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Live price preview -->
+            <div id="jobPricePreview" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:0.8rem; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <span style="color:#94a3b8;">Subtotal:</span>
+                    <span id="prevSubtotal">₹1,800</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <span style="color:#94a3b8;">Platform Fee (8%):</span>
+                    <span id="prevFee">₹144</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:1rem; font-weight:800; color:#10b981; margin-top:0.4rem;">
+                    <span>Total Bundled Price:</span>
+                    <span id="prevTotal">₹1,944</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="postJob()">📤 Post Job &amp; Find Matching Workers</button>
+
+            <!-- Match result after posting -->
+            <div id="jobMatchResult" style="display:none; margin-top:1rem;">
+                <div style="color:#10b981; font-weight:700; margin-bottom:0.8rem;" id="jobMatchHeading"></div>
+                <div id="jobMatchWorkers"></div>
+            </div>
+        </div>
+
+        <!-- ── TAB: Search Workers ─────────────────────────────────── -->
+        <div id="tabSearch" class="card" style="display:none;">
+            <div class="card-title">🔍 Search Verified Workers</div>
+            <div class="filter-bar">
+                <select id="searchSkill">
+                    <option value="">All Skills</option>
+                    <option value="catering">Catering</option>
+                    <option value="cooking">Cooking</option>
+                    <option value="loading">Loading</option>
+                    <option value="electrician">Electrician</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="driver">Driver</option>
+                </select>
+                <select id="searchDistrict">
+                    <option value="ALL">All Districts</option>
+                    <option value="Dindigul">Dindigul</option>
+                    <option value="Madurai">Madurai</option>
+                    <option value="Thanjavur">Thanjavur</option>
+                    <option value="Salem">Salem</option>
+                    <option value="Coimbatore">Coimbatore</option>
+                    <option value="Trichy">Trichy</option>
+                    <option value="Tirunelveli">Tirunelveli</option>
+                    <option value="Chennai">Chennai</option>
+                </select>
+                <select id="searchVerified">
+                    <option value="">All Workers</option>
+                    <option value="1">Verified Only</option>
+                </select>
+                <button class="btn-primary" style="padding:0.5rem 1.2rem; width:auto;"
+                        onclick="searchWorkers()">Search</button>
+            </div>
+            <div id="searchResultsCount" style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.6rem;"></div>
+            <div id="searchResults">
+                <div style="color:#94a3b8; text-align:center; padding:2rem;">
+                    Select filters above and click Search.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB: My Job Postings ───────────────────────────────── -->
+        <div id="tabJobs" class="card" style="display:none;">
+            <div class="card-title">📂 Open Job Postings</div>
+            <div class="filter-bar">
+                <select id="jobsStatusFilter" onchange="loadJobs()">
+                    <option value="OPEN">Open</option>
+                    <option value="MATCHED">Matched</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+                <select id="jobsDistrictFilter" onchange="loadJobs()">
+                    <option value="ALL">All Districts</option>
+                    <option value="Dindigul">Dindigul</option>
+                    <option value="Madurai">Madurai</option>
+                    <option value="Thanjavur">Thanjavur</option>
+                    <option value="Salem">Salem</option>
+                    <option value="Coimbatore">Coimbatore</option>
+                    <option value="Trichy">Trichy</option>
+                </select>
+            </div>
+            <div id="jobsContainer">
+                <div style="color:#94a3b8; text-align:center; padding:2rem;">Loading jobs...</div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /.container -->
+
+<div class="toast" id="toastBox"></div>
+
+<script>
+    let currentEmployerId   = null;
+    let currentEmployerName = '';
+
+    // ── Toast ────────────────────────────────────────────────────────────────
+    function showToast(msg, duration = 3500) {
+        const t = document.getElementById('toastBox');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, duration);
+    }
+
+    // ── Tab switching ────────────────────────────────────────────────────────
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tabPost').style.display   = tab === 'post'   ? 'block' : 'none';
+        document.getElementById('tabSearch').style.display = tab === 'search' ? 'block' : 'none';
+        document.getElementById('tabJobs').style.display   = tab === 'jobs'   ? 'block' : 'none';
+        if (tab === 'jobs') loadJobs();
+    }
+
+    // ── Employer Registration ────────────────────────────────────────────────
+    async function registerEmployer() {
+        const name     = document.getElementById('empName').value.trim();
+        const phone    = document.getElementById('empPhone').value.trim();
+        const business = document.getElementById('empBusiness').value.trim();
+        const district = document.getElementById('empDistrict').value;
+
+        if (!name || !phone) { showToast('⚠️ Contact person and phone are required.'); return; }
+
+        try {
+            // Try register (409 = already exists, that's fine)
+            const res  = await fetch('/api/register-employer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contact_person: name, phone, business_name: business, district })
+            });
+            const data = await res.json();
+            if (!data.success && res.status !== 409) {
+                showToast(`❌ ${data.error}`); return;
+            }
+
+            // Send OTP
+            const otpRes  = await fetch('/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, type: 'employer' })
+            });
+            const otpData = await otpRes.json();
+
+            document.getElementById('empPhoneDisplay').textContent = phone;
+            document.getElementById('empOtpSection').style.display = 'block';
+            document.getElementById('empRegForm').style.display    = 'none';
+
+            const devNote = otpData.otp_dev ? ` (Dev OTP: ${otpData.otp_dev})` : '';
+            document.getElementById('empOtpMsg').textContent  = `OTP sent to ${phone}${devNote}`;
+            document.getElementById('empOtpMsg').style.color  = '#10b981';
+
+            // Store name for display
+            currentEmployerName = business || name;
+        } catch (e) { showToast('❌ Network error.'); }
+    }
+
+    async function verifyEmpOTP() {
+        const phone = document.getElementById('empPhone').value.trim();
+        const otp   = document.getElementById('empOtpCode').value.trim();
+        if (!otp) { document.getElementById('empOtpMsg').textContent = 'Enter the OTP.'; return; }
+
+        try {
+            const res  = await fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, otp, type: 'employer' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('empOtpSection').style.display  = 'none';
+                document.getElementById('empVerifiedBadge').style.display = 'block';
+                document.getElementById('empVerifiedName').textContent  = currentEmployerName;
+                document.getElementById('empRegCard').querySelector('.card-title').textContent =
+                    '✅ Employer Verified';
+                showToast(`✓ Employer verified: ${currentEmployerName}`);
+            } else {
+                document.getElementById('empOtpMsg').textContent = `❌ ${data.error}`;
+                document.getElementById('empOtpMsg').style.color = '#ef4444';
+            }
+        } catch (e) {
+            document.getElementById('empOtpMsg').textContent = 'Network error.';
+        }
+    }
+
+    // ── Live price preview for job post form ─────────────────────────────────
+    function updatePricePreview() {
+        const count    = parseInt(document.getElementById('jobCount').value) || 1;
+        const rate     = parseFloat(document.getElementById('jobRate').value) || 600;
+        const subtotal = count * rate;
+        const fee      = Math.round(subtotal * 0.08);
+        const total    = subtotal + fee;
+        document.getElementById('prevSubtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+        document.getElementById('prevFee').textContent      = `₹${fee.toLocaleString('en-IN')}`;
+        document.getElementById('prevTotal').textContent    = `₹${total.toLocaleString('en-IN')}`;
+    }
+    document.getElementById('jobCount').addEventListener('input', updatePricePreview);
+    document.getElementById('jobRate').addEventListener('input', updatePricePreview);
+    updatePricePreview();
+
+    // Set today as default work date
+    document.getElementById('jobDate').valueAsDate = new Date();
+
+    // ── Post Job ─────────────────────────────────────────────────────────────
+    async function postJob() {
+        const title     = document.getElementById('jobTitle').value.trim();
+        const skill     = document.getElementById('jobSkill').value;
+        const count     = parseInt(document.getElementById('jobCount').value) || 1;
+        const rate      = parseFloat(document.getElementById('jobRate').value) || 600;
+        const date      = document.getElementById('jobDate').value;
+        const duration  = parseInt(document.getElementById('jobDuration').value) || 1;
+        const location  = document.getElementById('jobLocation').value.trim();
+        const district  = document.getElementById('jobDistrict').value;
+
+        if (!title || !location || !date) {
+            showToast('⚠️ Title, location, and date are required.'); return;
+        }
+
+        try {
+            // Post the job
+            const res  = await fetch('/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employer_id: currentEmployerId,
+                    title, skill_required: skill, workers_needed: count,
+                    per_worker_daily_rate: rate, work_date: date,
+                    duration_days: duration, location_name: location, district
+                })
+            });
+            const data = await res.json();
+            if (!data.success) { showToast(`❌ ${data.error}`); return; }
+
+            showToast('✓ Job posted! Finding matching workers...');
+
+            // Auto-match workers for this job
+            const matchRes  = await fetch('/api/match', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ skill, count, location: district })
+            });
+            const matchData = await matchRes.json();
+
+            const heading = document.getElementById('jobMatchHeading');
+            heading.textContent = `Found ${matchData.matchedWorkersCount} matching workers for "${title}"`;
+
+            document.getElementById('jobMatchWorkers').innerHTML =
+                (matchData.selectedWorkers || []).map(w => workerCard(w, true)).join('');
+
+            document.getElementById('jobMatchResult').style.display = 'block';
+
+        } catch (e) { showToast('❌ Network error.'); console.error(e); }
+    }
+
+    // ── Search Workers ───────────────────────────────────────────────────────
+    async function searchWorkers() {
+        const skill    = document.getElementById('searchSkill').value;
+        const district = document.getElementById('searchDistrict').value;
+        const verified = document.getElementById('searchVerified').value;
+
+        let url = '/api/workers?';
+        if (district && district !== 'ALL') url += `district=${district}&`;
+        if (skill)    url += `skill=${skill}&`;
+        if (verified) url += `verified=${verified}&`;
+
+        try {
+            const res  = await fetch(url);
+            const data = await res.json();
+            const workers = data.workers || [];
+
+            document.getElementById('searchResultsCount').textContent =
+                `${workers.length} worker${workers.length !== 1 ? 's' : ''} found`;
+            document.getElementById('searchResults').innerHTML =
+                workers.length
+                    ? workers.map(w => workerCard(w, false)).join('')
+                    : '<div style="color:#94a3b8; text-align:center; padding:2rem;">No workers found with these filters.</div>';
+        } catch (e) { showToast('❌ Network error.'); }
+    }
+
+    // ── Load Jobs ─────────────────────────────────────────────────────────────
+    async function loadJobs() {
+        const status   = document.getElementById('jobsStatusFilter').value;
+        const district = document.getElementById('jobsDistrictFilter').value;
+
+        let url = `/api/jobs?status=${status}`;
+        if (district && district !== 'ALL') url += `&district=${district}`;
+
+        try {
+            const res  = await fetch(url);
+            const data = await res.json();
+            const jobs  = data.jobs || [];
+            const container = document.getElementById('jobsContainer');
+
+            if (!jobs.length) {
+                container.innerHTML = `<div style="color:#94a3b8; text-align:center; padding:2rem;">No ${status.toLowerCase()} jobs found.</div>`;
+                return;
+            }
+            container.innerHTML = jobs.map(j => `
+                <div class="job-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+                        <h4>${j.title}</h4>
+                        <span class="job-status ${j.status}">${j.status}</span>
+                    </div>
+                    <div class="job-meta">
+                        🔧 ${j.skill_required} &nbsp;|&nbsp;
+                        👷 ${j.workers_needed} workers &nbsp;|&nbsp;
+                        📍 ${j.location_name}, ${j.district} &nbsp;|&nbsp;
+                        📅 ${j.work_date ? j.work_date.slice(0,10) : '—'}
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.85rem;">
+                        <span style="color:#10b981; font-weight:700;">
+                            Total: ₹${parseFloat(j.bundled_total_price).toLocaleString('en-IN')}
+                        </span>
+                        <span style="color:#94a3b8; margin-left:0.5rem;">
+                            (₹${parseFloat(j.per_worker_daily_rate).toLocaleString('en-IN')}/worker/day)
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) { showToast('❌ Network error.'); }
+    }
+
+    // ── Reusable worker card renderer ─────────────────────────────────────────
+    function workerCard(w, showBook) {
+        const skills = Array.isArray(w.skills) ? w.skills : [];
+        const verified = w.is_verified
+            ? '<span style="color:#10b981; font-size:0.75rem; font-weight:700;">✓ Verified</span>'
+            : '<span style="color:#f59e0b; font-size:0.75rem;">⏳ Pending</span>';
+        const bookBtn = showBook
+            ? `<button class="preset-btn" style="margin-top:0.5rem;"
+                       onclick="window.location.href='labour_card.html?id=${w.id}'">
+                   🪪 View Card
+               </button>`
+            : `<button class="preset-btn" style="margin-top:0.5rem;"
+                       onclick="window.location.href='labour_card.html?id=${w.id}'">
+                   🪪 View Card
+               </button>`;
+        return `
+        <div class="worker-result">
+            <img src="${w.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}"
+                 alt="${w.full_name || w.name}">
+            <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>${w.full_name || w.name} ${verified}</h4>
+                    <span style="color:#10b981; font-weight:700;">₹${w.daily_rate}/day</span>
+                </div>
+                <div class="result-meta">
+                    📍 ${w.district}${w.town_area ? ' • ' + w.town_area : ''} •
+                    <strong>${w.total_gigs} verified days</strong>
+                </div>
+                <div style="margin-top:0.3rem;">
+                    ${skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+                <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.15rem;">
+                    ${w.skill_level || ''} | ${w.attendance_reliability || ''}
+                </div>
+                ${bookBtn}
+            </div>
+        </div>`;
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    window.onload = () => {
+        // Pre-load search with all workers
+        searchWorkers();
+    };
+</script>
+</body>
+</html>

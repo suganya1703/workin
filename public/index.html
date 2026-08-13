@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workin — Digital Labour Marketplace (Tamil Nadu)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Modals ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.78);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: #1e293b;
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 1.6rem;
+            max-height: 92vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 0.9rem; right: 0.9rem;
+            background: #334155;
+            color: #fff;
+            border: none;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        /* ── Form helpers ── */
+        .form-group { margin-bottom: 0.85rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.83rem;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+        .form-control {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .form-control:focus { outline: none; border-color: #10b981; }
+
+        /* ── Voice mic button ── */
+        .mic-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+        .mic-row textarea { flex: 1; }
+        .btn-mic {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #fff;
+            border-radius: 8px;
+            padding: 0.55rem 0.8rem;
+            cursor: pointer;
+            font-size: 1.4rem;
+            line-height: 1;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            align-self: flex-end;
+            height: 42px;
+        }
+        .btn-mic.listening {
+            background: #ef4444;
+            border-color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.55; }
+        }
+        .voice-hint {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.3rem;
+        }
+
+        /* ── OTP section inside register modal ── */
+        .otp-section {
+            display: none;
+            background: rgba(245,158,11,0.08);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.8rem;
+        }
+        .otp-section h4  { color: #f59e0b; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .otp-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .otp-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            letter-spacing: 0.25rem;
+            text-align: center;
+        }
+        .btn-otp-send {
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-otp-verify {
+            background: #10b981;
+            color: #000;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .otp-msg { font-size: 0.8rem; margin-top: 0.45rem; color: #94a3b8; }
+
+        /* ── Steps indicator in register modal ── */
+        .steps-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .step {
+            flex: 1;
+            padding: 0.35rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #334155;
+            color: #64748b;
+        }
+        .step.active  { background: rgba(16,185,129,0.2); color: #10b981; }
+        .step.done    { background: rgba(16,185,129,0.4); color: #10b981; }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            background: #10b981;
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: none;
+            z-index: 2000;
+            max-width: 360px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-group">
+        <div class="logo-badge">W</div>
+        <div class="logo-text">
+            <h1>Workin (வொர்க்கின்)</h1>
+            <p>Digital Labour Marketplace for Tamil Nadu Short-Term Workers</p>
+        </div>
+    </div>
+    <div style="display:flex; gap:0.8rem; align-items:center;">
+        <button class="preset-btn" style="background:#10b981; color:#000; font-weight:700;"
+                onclick="openRegisterModal()">+ Register Worker</button>
+        <a href="employer.html">
+            <button class="preset-btn" style="background:#f59e0b; color:#000; font-weight:700;">
+                🏢 Employer Portal
+            </button>
+        </a>
+        <div class="pilot-badge">📍 All TN Districts</div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- ─── 1. VOICE JOB POSTING ─────────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">🎙️ Tamil Voice Job Posting</div>
+
+        <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:0.8rem;">
+            Click the mic 🎤 to speak in Tamil or English, or pick a preset, then get a single bundled price quote.
+        </p>
+
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.8rem; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:0.85rem; color:#94a3b8;">District:</label>
+            <select id="locationSelect" onchange="filterWorkersByLocation()"
+                    style="background:#0f172a; color:#fff; border:1px solid #334155; padding:0.4rem 0.8rem; border-radius:8px;">
+                <option value="ALL">All Tamil Nadu</option>
+                <option value="Dindigul">Dindigul (திண்டுக்கல்)</option>
+                <option value="Madurai">Madurai (மதுரை)</option>
+                <option value="Thanjavur">Thanjavur (தஞ்சாவூர்)</option>
+                <option value="Salem">Salem (சேலம்)</option>
+                <option value="Coimbatore">Coimbatore (கோயம்புத்தூர்)</option>
+                <option value="Trichy">Trichy (திருச்சி)</option>
+                <option value="Tirunelveli">Tirunelveli (திருநெல்வேலி)</option>
+            </select>
+        </div>
+
+        <!-- Preset buttons -->
+        <div style="margin-bottom:0.8rem;">
+            <button class="preset-btn" onclick="setPreset(1)">Preset 1: 5 Catering (Dindigul)</button>
+            <button class="preset-btn" onclick="setPreset(2)">Preset 2: 2 Cooks (Thanjavur)</button>
+            <button class="preset-btn" onclick="setPreset(3)">Preset 3: 4 Loaders (Salem)</button>
+            <button class="preset-btn" onclick="setPreset(4)">Preset 4: 2 Electricians (Coimbatore)</button>
+        </div>
+
+        <!-- Textarea + Mic button -->
+        <div class="mic-row">
+            <textarea id="tamilAudioTranscript" rows="3"
+                      placeholder="Enter Tamil/English voice transcript here, or click 🎤 to speak..."></textarea>
+            <button class="btn-mic" id="micBtn" onclick="toggleVoice()" title="Click to speak">🎤</button>
+        </div>
+        <p class="voice-hint" id="voiceStatus">
+            Voice input: <span id="voiceLang">Tamil (ta-IN)</span> &nbsp;|&nbsp;
+            <a href="#" onclick="cycleVoiceLang(); return false;" style="color:#10b981;">Switch language</a>
+        </p>
+
+        <button class="btn-primary" onclick="parseAndMatch()" style="margin-top:0.8rem;">
+            ⚡ Parse Voice &amp; Get Single Price Quote
+        </button>
+
+        <!-- Quote result -->
+        <div id="quoteResult" class="quote-box" style="display:none;">
+            <h4 style="color:#10b981; margin-bottom:0.5rem;">💰 Single Bundled Quote</h4>
+            <div class="price-row"><span>Skill Requested:</span><strong id="qSkill" style="text-transform:capitalize;">-</strong></div>
+            <div class="price-row"><span>Location:</span><strong id="qLoc">-</strong></div>
+            <div class="price-row"><span>Workers Needed:</span><strong id="qCount">-</strong></div>
+            <div class="price-row"><span>Per Worker Rate / Day:</span><span id="qRate">-</span></div>
+            <div class="price-row"><span>Subtotal:</span><span id="qSubtotal">-</span></div>
+            <div class="price-row"><span>Platform Fee (8%):</span><span id="qFee">-</span></div>
+            <div class="price-row total"><span>Total Bundled Quote:</span><span id="qTotal">-</span></div>
+            <button class="btn-primary" style="margin-top:0.8rem; background:#f59e0b;" onclick="confirmJobBooking()">
+                ✅ Confirm Booking &amp; Dispatch Workers
+            </button>
+        </div>
+    </div>
+
+    <!-- ─── 2. VERIFIED WORKERS LIST ──────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">👷 Verified Short-Term Workers</div>
+        <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:0.8rem;">
+            Click "View Card" to open a worker's Digital Labour Card:
+        </p>
+        <div id="workerListContainer">
+            <div style="text-align:center; color:#94a3b8; padding:2rem;">Loading verified workers...</div>
+        </div>
+    </div>
+
+    <!-- ─── 3. DEMAND FORECAST ────────────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">📅 Tamil Nadu Demand Forecast</div>
+        <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:0.8rem;">
+            High-demand spikes across Tamil Nadu hubs — plan ahead:
+        </p>
+        <div id="forecastContainer"></div>
+    </div>
+
+    <!-- ─── 4. DIGITAL LABOUR CARD PREVIEW ───────────────────────────── -->
+    <div class="card">
+        <div class="card-title">🪪 Digital Labour Card Preview</div>
+        <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:0.8rem;">
+            Official employment record (Attendance &amp; Skills — NO numerical ratings):
+        </p>
+        <div class="labour-card-preview" id="labourCardBox">
+            <div class="card-header-tn">
+                <div>
+                    <h3 id="cardName">முருகன் (Murugan K.)</h3>
+                    <p style="font-size:0.75rem; color:#94a3b8;" id="cardNumber">Card #: TN-WORKER-2026-W101</p>
+                </div>
+                <span class="score-badge" style="background:rgba(16,185,129,0.2); color:#10b981;">✓ Verified</span>
+            </div>
+            <div class="card-body-tn">
+                <div class="qr-code">
+                    <img id="cardQr" src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=Workin-Murugan-Verified" alt="QR">
+                </div>
+                <div>
+                    <p style="font-size:0.85rem;"><strong>District:</strong> <span id="cardDistrict">Dindigul</span></p>
+                    <p style="font-size:0.85rem;"><strong>Level:</strong> <span id="cardLevel">Master Cook</span></p>
+                    <p style="font-size:0.85rem;"><strong>Verified Days:</strong>
+                        <span style="color:#10b981; font-weight:700;" id="cardGigs">28</span></p>
+                    <p style="font-size:0.85rem;"><strong>Attendance:</strong>
+                        <span style="color:#f59e0b; font-weight:700;" id="cardAttendance">98% On-Time</span></p>
+                </div>
+            </div>
+        </div>
+        <button class="preset-btn" id="openCardBtn" style="width:100%; margin-top:1rem;"
+                onclick="openFullCard('w101')">
+            🔍 Open Full Printable Labour Card
+        </button>
+    </div>
+
+</div><!-- /.container -->
+
+<!-- ══ REGISTER WORKER MODAL ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="registerModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeRegisterModal()">✕</button>
+        <h3 style="color:#10b981; margin-bottom:1rem;">📝 Register New Worker</h3>
+
+        <!-- Steps bar -->
+        <div class="steps-bar">
+            <div class="step active" id="step1bar">1. Details</div>
+            <div class="step" id="step2bar">2. Verify Phone</div>
+            <div class="step" id="step3bar">3. Done ✓</div>
+        </div>
+
+        <!-- Step 1: Worker details form -->
+        <div id="regStep1">
+            <form onsubmit="submitNewWorker(event)">
+                <div class="form-group">
+                    <label>Full Name (Tamil &amp; English):</label>
+                    <input type="text" id="regName" class="form-control"
+                           placeholder="e.g. குமார் (Kumar R.)" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number:</label>
+                    <input type="tel" id="regPhone" class="form-control"
+                           placeholder="+91 98765 43210" required>
+                </div>
+                <div class="form-group">
+                    <label>District:</label>
+                    <select id="regDistrict" class="form-control">
+                        <option value="Dindigul">Dindigul</option>
+                        <option value="Madurai">Madurai</option>
+                        <option value="Thanjavur">Thanjavur</option>
+                        <option value="Salem">Salem</option>
+                        <option value="Coimbatore">Coimbatore</option>
+                        <option value="Trichy">Trichy</option>
+                        <option value="Tirunelveli">Tirunelveli</option>
+                        <option value="Chennai">Chennai</option>
+                        <option value="Erode">Erode</option>
+                        <option value="Vellore">Vellore</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Town / Area:</label>
+                    <input type="text" id="regTown" class="form-control" placeholder="e.g. Near Bus Stand, Dindigul">
+                </div>
+                <div class="form-group">
+                    <label>Primary Skill:</label>
+                    <select id="regSkill" class="form-control">
+                        <option value="catering">Catering / Function Helper</option>
+                        <option value="cooking">Cook / Biryani Specialist</option>
+                        <option value="loading">Loading / Unloading</option>
+                        <option value="electrician">Electrician / Wireman</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="cleaning">Cleaning / Housekeeping</option>
+                        <option value="painting">Painting</option>
+                        <option value="driver">Driver</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Experience / Skill Level:</label>
+                    <input type="text" id="regSkillLevel" class="form-control"
+                           placeholder="e.g. Senior Cook, 5 yrs experience">
+                </div>
+                <div class="form-group">
+                    <label>Expected Daily Wage (₹):</label>
+                    <input type="number" id="regRate" class="form-control" value="650" min="300">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top:0.5rem;">
+                    Next → Verify Phone
+                </button>
+            </form>
+        </div>
+
+        <!-- Step 2: OTP verification -->
+        <div id="regStep2" style="display:none;">
+            <p style="font-size:0.9rem; color:#94a3b8; margin-bottom:1rem;">
+                Worker registered! Now verify the phone number to activate the Digital Labour Card.
+            </p>
+            <div class="form-group">
+                <label>Registered Phone (auto-filled):</label>
+                <input type="tel" id="otpPhoneReg" class="form-control" readonly>
+            </div>
+            <button class="btn-primary" style="background:#f59e0b; margin-bottom:0.8rem;" onclick="sendRegOTP()">
+                📱 Send OTP
+            </button>
+            <div class="form-group">
+                <label>Enter 6-digit OTP:</label>
+                <input type="text" id="otpCodeReg" class="otp-input form-control"
+                       placeholder="- - - - - -" maxlength="6" style="letter-spacing:0.3rem; font-size:1.2rem;">
+            </div>
+            <button class="btn-primary" onclick="verifyRegOTP()">✅ Verify &amp; Activate Card</button>
+            <p class="otp-msg" id="otpMsgReg"></p>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div id="regStep3" style="display:none; text-align:center; padding:1rem 0;">
+            <div style="font-size:3rem; margin-bottom:1rem;">🎉</div>
+            <h3 style="color:#10b981; margin-bottom:0.5rem;">Worker Activated!</h3>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">
+                Digital Labour Card is now active and visible in the worker list.
+            </p>
+            <button class="btn-primary" id="viewCardBtn" onclick="">View Labour Card</button>
+            <button class="btn-primary" style="background:#334155; color:#fff; margin-top:0.5rem;"
+                    onclick="closeRegisterModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toastBox"></div>
+
+<script>
+    // ── Presets ──────────────────────────────────────────────────────────────
+    const PRESETS = {
+        1: "திண்டுக்கல்ல கல்யாண மண்டபத்துக்கு நாளைக்கு 5 கேட்டரிங் சர்வர் ஆட்கள் வேணும். ஒரு ஆளுக்கு சம்பளம் 600 ரூபாய்.",
+        2: "தஞ்சாவூர் சமையல் செய்ய 2 குக்கிங் மாஸ்டர்கள் வேணும்.",
+        3: "சேலம் லாரி லோடிங் செய்ய 4 லோடிங் ஆட்கள் உடனே தேவை.",
+        4: "கோயம்புத்தூர் எலக்ட்ரீஷியன் 2 பேர் உடனே தேவை."
+    };
+
+    let currentMatchedWorkerIds = [];
+    let lastParsedData = null;
+    let currentRegisteredWorkerId = null;
+    let currentRegisteredPhone = null;
+
+    // ── Voice input ──────────────────────────────────────────────────────────
+    const VOICE_LANGS = ['ta-IN', 'en-IN', 'en-US'];
+    let voiceLangIdx  = 0;
+    let recognition   = null;
+    let isListening   = false;
+
+    function cycleVoiceLang() {
+        voiceLangIdx = (voiceLangIdx + 1) % VOICE_LANGS.length;
+        document.getElementById('voiceLang').textContent = VOICE_LANGS[voiceLangIdx];
+    }
+
+    function toggleVoice() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            showToast('❌ Your browser does not support Web Speech API. Try Chrome.');
+            return;
+        }
+        if (isListening) {
+            recognition && recognition.stop();
+            return;
+        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang       = VOICE_LANGS[voiceLangIdx];
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        const micBtn   = document.getElementById('micBtn');
+        const textarea = document.getElementById('tamilAudioTranscript');
+
+        recognition.onstart = () => {
+            isListening = true;
+            micBtn.classList.add('listening');
+            micBtn.textContent = '🔴';
+            document.getElementById('voiceStatus').style.color = '#ef4444';
+        };
+        recognition.onresult = e => {
+            let transcript = '';
+            for (let i = 0; i < e.results.length; i++) {
+                transcript += e.results[i][0].transcript;
+            }
+            textarea.value = transcript;
+        };
+        recognition.onend = () => {
+            isListening = false;
+            micBtn.classList.remove('listening');
+            micBtn.textContent = '🎤';
+            document.getElementById('voiceStatus').style.color = '';
+        };
+        recognition.onerror = e => {
+            showToast(`Voice error: ${e.error}`);
+            isListening = false;
+            micBtn.classList.remove('listening');
+            micBtn.textContent = '🎤';
+        };
+        recognition.start();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function setPreset(num) {
+        document.getElementById('tamilAudioTranscript').value = PRESETS[num];
+    }
+
+    function showToast(msg, duration = 3500) {
+        const t = document.getElementById('toastBox');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, duration);
+    }
+
+    function openRegisterModal() {
+        // Reset to step 1
+        showRegStep(1);
+        document.getElementById('registerModal').style.display = 'flex';
+    }
+    function closeRegisterModal() {
+        document.getElementById('registerModal').style.display = 'none';
+    }
+
+    function showRegStep(n) {
+        ['regStep1','regStep2','regStep3'].forEach((id, i) => {
+            document.getElementById(id).style.display = (i + 1 === n) ? 'block' : 'none';
+        });
+        ['step1bar','step2bar','step3bar'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.className = 'step' + (i + 1 < n ? ' done' : i + 1 === n ? ' active' : '');
+        });
+    }
+
+    // ── Register Worker ───────────────────────────────────────────────────────
+    async function submitNewWorker(e) {
+        e.preventDefault();
+        const payload = {
+            name:        document.getElementById('regName').value.trim(),
+            phone:       document.getElementById('regPhone').value.trim(),
+            district:    document.getElementById('regDistrict').value,
+            town:        document.getElementById('regTown').value.trim(),
+            skills:      [document.getElementById('regSkill').value],
+            skill_level: document.getElementById('regSkillLevel').value.trim(),
+            daily_rate:  document.getElementById('regRate').value
+        };
+        try {
+            const res  = await fetch('/api/register-worker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentRegisteredWorkerId = data.worker.id;
+                currentRegisteredPhone    = payload.phone;
+                document.getElementById('otpPhoneReg').value = payload.phone;
+                showRegStep(2);
+            } else {
+                showToast(`❌ ${data.error}`);
+            }
+        } catch (err) {
+            showToast('❌ Network error. Is the server running?');
+        }
+    }
+
+    async function sendRegOTP() {
+        const phone = document.getElementById('otpPhoneReg').value.trim();
+        try {
+            const res  = await fetch('/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, type: 'worker' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const devNote = data.otp_dev ? ` (Dev OTP: ${data.otp_dev})` : '';
+                setOtpMsgReg(`✓ OTP sent to ${phone}${devNote}`, '#10b981');
+            } else {
+                setOtpMsgReg(`❌ ${data.error}`, '#ef4444');
+            }
+        } catch (e) { setOtpMsgReg('Network error.', '#ef4444'); }
+    }
+
+    async function verifyRegOTP() {
+        const phone = document.getElementById('otpPhoneReg').value.trim();
+        const otp   = document.getElementById('otpCodeReg').value.trim();
+        if (!otp) { setOtpMsgReg('Please enter the OTP.', '#f59e0b'); return; }
+        try {
+            const res  = await fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, otp, type: 'worker' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showRegStep(3);
+                // Set up "View Card" button
+                document.getElementById('viewCardBtn').onclick =
+                    () => openFullCard(currentRegisteredWorkerId);
+                loadWorkers('ALL');
+            } else {
+                setOtpMsgReg(`❌ ${data.error}`, '#ef4444');
+            }
+        } catch (e) { setOtpMsgReg('Network error.', '#ef4444'); }
+    }
+
+    function setOtpMsgReg(msg, color) {
+        const el  = document.getElementById('otpMsgReg');
+        el.textContent = msg;
+        el.style.color = color;
+    }
+
+    // ── Load Workers ──────────────────────────────────────────────────────────
+    async function filterWorkersByLocation() {
+        const district = document.getElementById('locationSelect').value;
+        loadWorkers(district);
+    }
+
+    async function loadWorkers(district = 'ALL') {
+        try {
+            const url = `/api/workers?district=${district}`;
+            const res  = await fetch(url);
+            const data = await res.json();
+            renderWorkerList(data.workers || []);
+        } catch (err) {
+            document.getElementById('workerListContainer').innerHTML =
+                '<div style="color:#ef4444; padding:1rem;">Failed to load workers. Is the server running?</div>';
+        }
+    }
+
+    function renderWorkerList(workers) {
+        const container = document.getElementById('workerListContainer');
+        if (!workers || workers.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:1.5rem;">No verified workers in this district yet.</div>';
+            return;
+        }
+        container.innerHTML = workers.map(w => {
+            const skills = Array.isArray(w.skills) ? w.skills : [];
+            const verified = w.is_verified
+                ? '<span style="color:#10b981; font-size:0.75rem;">✓ Verified</span>'
+                : '<span style="color:#f59e0b; font-size:0.75rem;">⏳ Pending</span>';
+            return `
+            <div class="worker-card">
+                <img src="${w.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}"
+                     class="worker-img" alt="${w.full_name || w.name}">
+                <div class="worker-details" style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                        <h4>${w.full_name || w.name} ${verified}</h4>
+                        <button class="preset-btn" onclick="inspectLabourCard('${w.id}')">🪪 Card</button>
+                    </div>
+                    <div class="worker-meta">
+                        📍 ${w.district} • ${w.town_area || w.town || ''} •
+                        <strong>${w.total_gigs} Days</strong>
+                    </div>
+                    <div style="margin-top:0.3rem;">
+                        ${skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    </div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem;">
+                        ${w.skill_level || ''} | ${w.attendance_reliability || ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Labour Card ───────────────────────────────────────────────────────────
+    async function inspectLabourCard(workerId) {
+        try {
+            const res  = await fetch(`/api/labour-card/${workerId}`);
+            const data = await res.json();
+            if (!data.success) return;
+            const c = data.card;
+
+            document.getElementById('cardName').textContent       = c.workerName;
+            document.getElementById('cardNumber').textContent     = `Card #: ${c.cardNumber}`;
+            document.getElementById('cardDistrict').textContent   = c.district;
+            document.getElementById('cardLevel').textContent      = c.skillLevel;
+            document.getElementById('cardGigs').textContent       = `${c.totalGigsCompleted}`;
+            document.getElementById('cardAttendance').textContent = c.attendanceReliability;
+            document.getElementById('cardQr').src =
+                `https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(c.qrCodeData)}`;
+
+            // Update "Open Full Card" button target
+            document.getElementById('openCardBtn').onclick = () => openFullCard(workerId);
+            showToast(`Loaded card for ${c.workerName}`);
+        } catch (err) { console.error(err); }
+    }
+
+    function openFullCard(workerId) {
+        window.location.href = `labour_card.html?id=${workerId}`;
+    }
+
+    // ── Voice Parse + Match ───────────────────────────────────────────────────
+    async function parseAndMatch() {
+        const transcript = document.getElementById('tamilAudioTranscript').value.trim();
+        if (!transcript) { showToast('⚠️ Please enter or speak a voice transcript first.'); return; }
+
+        try {
+            const parseRes = await fetch('/api/parse-voice', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcript })
+            });
+            const parseData = await parseRes.json();
+            const parsed    = parseData.parsed;
+            lastParsedData  = parsed;
+
+            const matchRes = await fetch('/api/match', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ skill: parsed.detectedSkill, count: parsed.workerCount, location: parsed.location })
+            });
+            const matchData = await matchRes.json();
+            currentMatchedWorkerIds = matchData.selectedWorkers.map(w => w.id);
+
+            document.getElementById('qSkill').textContent    = matchData.requestedSkill;
+            document.getElementById('qLoc').textContent      = matchData.location;
+            document.getElementById('qCount').textContent    = `${matchData.requestedCount} Workers`;
+            document.getElementById('qRate').textContent     = `₹${matchData.pricing.perWorkerAvgRate}`;
+            document.getElementById('qSubtotal').textContent = `₹${matchData.pricing.subtotal}`;
+            document.getElementById('qFee').textContent      = `₹${matchData.pricing.platformFee}`;
+            document.getElementById('qTotal').textContent    = `₹${matchData.pricing.bundledTotal}`;
+            document.getElementById('quoteResult').style.display = 'block';
+
+            renderWorkerList(matchData.selectedWorkers);
+            showToast(`✓ Matched ${matchData.matchedWorkersCount} workers in ${matchData.location}`);
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Error parsing voice. Is the server running?');
+        }
+    }
+
+    async function confirmJobBooking() {
+        if (!lastParsedData) return;
+        try {
+            const res  = await fetch('/api/book-job', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    workerIds:    currentMatchedWorkerIds,
+                    location:     lastParsedData.location,
+                    skill:        lastParsedData.detectedSkill,
+                    bundledTotal: lastParsedData.bundledTotal,
+                    platformFee:  lastParsedData.platformFee
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`🎉 Booking ${data.booking.bookingId} Confirmed!`, 5000);
+                loadWorkers('ALL');
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    // ── Demand Forecast ───────────────────────────────────────────────────────
+    async function loadForecast() {
+        try {
+            const res  = await fetch('/api/demand-forecast');
+            const data = await res.json();
+            const container = document.getElementById('forecastContainer');
+            if (!data.forecast || data.forecast.length === 0) {
+                container.innerHTML = '<p style="color:#94a3b8;">No forecast data available.</p>';
+                return;
+            }
+            container.innerHTML = data.forecast.map(item => `
+                <div class="forecast-item">
+                    <div class="forecast-date">📅 ${item.date} • ${item.district} • ${item.demandLevel} (${item.wageSpikeFactor})</div>
+                    <div class="forecast-title">${item.event}</div>
+                    <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem;">${item.impact}</div>
+                </div>
+            `).join('');
+        } catch (err) { console.error(err); }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    window.onload = () => {
+        setPreset(1);
+        loadWorkers('ALL');
+        loadForecast();
+    };
+</script>
+</body>
+</html>

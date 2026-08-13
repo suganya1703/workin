@@ -1,0 +1,310 @@
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --accent: #f59e0b;
+    --accent-glow: rgba(245, 158, 11, 0.2);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    line-height: 1.6;
+    padding-bottom: 3rem;
+}
+
+header {
+    background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-badge {
+    background: var(--primary);
+    color: #000;
+    font-weight: 800;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-size: 1.2rem;
+}
+
+.logo-text h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.logo-text p {
+    font-size: 0.8rem;
+    color: var(--primary);
+}
+
+.pilot-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+    border-color: var(--primary);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-main);
+}
+
+.voice-input-box {
+    background: #0f172a;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.preset-btn {
+    background: #334155;
+    color: #cbd5e1;
+    border: 1px solid #475569;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0.25rem;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    background: var(--primary);
+    color: #000;
+    border-color: var(--primary);
+}
+
+textarea {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: #fff;
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    margin-top: 0.5rem;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #000;
+    font-weight: 700;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.quote-box {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-top: 1rem;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+}
+
+.price-row.total {
+    border-bottom: none;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.worker-card {
+    background: #0f172a;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.worker-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+.worker-details h4 {
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.worker-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.skill-tag {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--primary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.3rem;
+}
+
+.score-badge {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--accent);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.forecast-item {
+    background: #0f172a;
+    border-left: 4px solid var(--accent);
+    padding: 0.8rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 0.8rem;
+}
+
+.forecast-date {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.forecast-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+/* Digital Labour Card Styling */
+.labour-card-preview {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+}
+
+.card-header-tn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.card-header-tn h3 {
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.card-body-tn {
+    display: flex;
+    gap: 1.2rem;
+}
+
+.qr-code {
+    background: #fff;
+    padding: 0.5rem;
+    border-radius: 8px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}

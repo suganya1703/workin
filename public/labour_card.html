@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workin — Digital Labour Card (டிஜிட்டல் தொழிலாளர் அட்டை)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .back-link {
+            align-self: flex-start;
+            margin-bottom: 1.5rem;
+            color: #10b981;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        /* ── Loading / Error states ── */
+        #statusBox {
+            text-align: center;
+            color: #94a3b8;
+            padding: 3rem;
+            font-size: 1rem;
+        }
+
+        /* ── Card wrapper ── */
+        .card-container {
+            width: 100%;
+            max-width: 500px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 2px solid #10b981;
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: none; /* shown after data loads */
+        }
+
+        /* Header row */
+        .emblem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .emblem-header h3 { color: #10b981; font-size: 1.1rem; }
+        .emblem-header p  { font-size: 0.72rem; color: #94a3b8; margin-top: 0.15rem; }
+
+        .govt-badge {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Profile row */
+        .profile-row {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+            margin-bottom: 1.4rem;
+        }
+        .profile-photo {
+            width: 90px; height: 90px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 3px solid #10b981;
+            flex-shrink: 0;
+        }
+        .info-group h2   { font-size: 1.2rem; color: #fff; margin-bottom: 0.25rem; }
+        .info-group p    { font-size: 0.83rem; color: #94a3b8; margin-bottom: 0.12rem; }
+        .info-group span { color: #f8fafc; }
+
+        /* Skill tags */
+        .skill-tag {
+            display: inline-block;
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            padding: 0.15rem 0.55rem;
+            border-radius: 4px;
+            font-size: 0.73rem;
+            font-weight: 600;
+            margin: 0.15rem 0.15rem 0 0;
+            text-transform: capitalize;
+        }
+
+        /* Fair work notice */
+        .no-rating-notice {
+            background: rgba(245,158,11,0.08);
+            border-left: 3px solid #f59e0b;
+            color: #cbd5e1;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-bottom: 1.1rem;
+            line-height: 1.5;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.2rem;
+            border: 1px solid #334155;
+        }
+        .stat-box h4 { font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; }
+        .stat-box p  { font-size: 1rem; font-weight: 800; color: #10b981; }
+
+        /* Verification stamp */
+        .verification-stamp {
+            background: rgba(16,185,129,0.08);
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 0.6rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1.1rem;
+        }
+        .verification-stamp.pending {
+            background: rgba(245,158,11,0.08);
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        /* QR + footer */
+        .qr-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #334155;
+            padding-top: 1rem;
+            gap: 1rem;
+        }
+        .qr-section p { font-size: 0.73rem; color: #94a3b8; flex: 1; }
+        .qr-img {
+            background: #fff;
+            padding: 0.4rem;
+            border-radius: 8px;
+            width: 75px; height: 75px;
+            flex-shrink: 0;
+        }
+
+        /* Action buttons */
+        .btn-row { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .btn-print {
+            flex: 1;
+            background: #10b981;
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .btn-back {
+            flex: 1;
+            background: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 0.75rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        /* OTP verify banner (shown when not yet verified) */
+        .otp-banner {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        .otp-banner h4   { color: #f59e0b; font-size: 0.9rem; margin-bottom: 0.6rem; }
+        .otp-banner p    { font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.7rem; }
+        .otp-row         { display: flex; gap: 0.5rem; }
+        .otp-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 0.55rem 0.8rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            letter-spacing: 0.2rem;
+            text-align: center;
+            font-family: inherit;
+        }
+        .btn-otp {
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .otp-msg { font-size: 0.8rem; margin-top: 0.5rem; }
+
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .card-container {
+                border-color: #000;
+                box-shadow: none;
+                background: #fff;
+                max-width: 100%;
+            }
+            .btn-row, .back-link, .otp-banner { display: none !important; }
+            .emblem-header h3, .verification-stamp { color: #000 !important; }
+            .stat-box p { color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <a class="back-link" href="/">← Back to Workin Dashboard</a>
+
+    <div id="statusBox">⏳ Loading labour card...</div>
+
+    <div class="card-container" id="cardContainer">
+
+        <!-- Header -->
+        <div class="emblem-header">
+            <div>
+                <h3>WORKIN (வொர்க்கின்)</h3>
+                <p>Official Digital Labour Employment Record</p>
+            </div>
+            <span class="govt-badge" id="badgeVerified">Verified ID</span>
+        </div>
+
+        <!-- Profile -->
+        <div class="profile-row">
+            <img id="cardPhoto"
+                 src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+                 class="profile-photo" alt="Worker Photo">
+            <div class="info-group">
+                <h2 id="cardName">—</h2>
+                <p><strong>District:</strong> <span id="cardDistrict">—</span></p>
+                <p><strong>Card ID:</strong> <span id="cardId">—</span></p>
+                <p><strong>Phone:</strong> <span id="cardPhone">—</span></p>
+                <p><strong>Level:</strong> <span id="cardLevel">—</span></p>
+                <div id="cardSkills" style="margin-top: 0.4rem;"></div>
+            </div>
+        </div>
+
+        <!-- Fair Work Notice -->
+        <div class="no-rating-notice">
+            🛡️ <strong>Fair Work Guarantee:</strong> This card does not carry numerical star ratings
+            to prevent bias against informal workers. Employment history is verified purely by
+            completed work days and attendance records.
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h4>Verified Work Days</h4>
+                <p id="cardGigs">0 Days</p>
+            </div>
+            <div class="stat-box">
+                <h4>Attendance Record</h4>
+                <p id="cardAttendance">—</p>
+            </div>
+            <div class="stat-box">
+                <h4>Issued On</h4>
+                <p id="cardIssued">—</p>
+            </div>
+            <div class="stat-box">
+                <h4>Verification Level</h4>
+                <p id="cardVerifLevel">—</p>
+            </div>
+        </div>
+
+        <!-- Verification Stamp -->
+        <div class="verification-stamp" id="verifStamp">
+            ✓ Aadhaar Hash Verified • Verified Income & Work History Record
+        </div>
+
+        <!-- QR -->
+        <div class="qr-section">
+            <p>Scan QR to verify live work days &amp; skill credentials online.</p>
+            <img id="cardQr"
+                 src="https://api.qrserver.com/v1/create-qr-code/?size=75x75&data=workin"
+                 class="qr-img" alt="QR Code">
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="btn-row">
+            <button class="btn-back" onclick="history.back()">← Go Back</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Print / Save Card</button>
+        </div>
+
+        <!-- OTP Verification Banner (only shown when worker not yet verified) -->
+        <div class="otp-banner" id="otpBanner">
+            <h4>📱 Verify Your Phone to Activate Card</h4>
+            <p>Your card is pending phone verification. Enter your registered phone number to receive an OTP.</p>
+            <div class="otp-row" style="margin-bottom: 0.5rem;">
+                <input type="tel" id="otpPhone" class="otp-input" placeholder="+91 98765 43210"
+                       style="letter-spacing: normal; text-align: left;">
+                <button class="btn-otp" onclick="sendOTP()">Send OTP</button>
+            </div>
+            <div class="otp-row">
+                <input type="text" id="otpCode" class="otp-input" placeholder="Enter 6-digit OTP" maxlength="6">
+                <button class="btn-otp" onclick="verifyOTP()">Verify</button>
+            </div>
+            <p class="otp-msg" id="otpMsg" style="color: #94a3b8;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Read ?id= from URL, fall back to 'w101' for direct open
+        const params   = new URLSearchParams(window.location.search);
+        const workerId = params.get('id') || 'w101';
+
+        async function loadCard() {
+            try {
+                const res  = await fetch(`/api/labour-card/${workerId}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    document.getElementById('statusBox').textContent = '❌ Worker not found.';
+                    return;
+                }
+
+                const c = data.card;
+
+                // Populate fields
+                document.getElementById('cardName').textContent       = c.workerName || '—';
+                document.getElementById('cardDistrict').textContent   = c.district   || '—';
+                document.getElementById('cardId').textContent         = c.cardNumber || '—';
+                document.getElementById('cardPhone').textContent      = c.phone      || '—';
+                document.getElementById('cardLevel').textContent      = c.skillLevel || '—';
+                document.getElementById('cardGigs').textContent       = `${c.totalGigsCompleted} Days`;
+                document.getElementById('cardAttendance').textContent = c.attendanceReliability || '—';
+                document.getElementById('cardIssued').textContent     = c.issueDate  || '—';
+                document.getElementById('cardVerifLevel').textContent = `Level ${c.verificationLevel}`;
+
+                if (c.photoUrl) document.getElementById('cardPhoto').src = c.photoUrl;
+
+                // Skills
+                const skillsArr = Array.isArray(c.skills) ? c.skills : [];
+                document.getElementById('cardSkills').innerHTML =
+                    skillsArr.map(s => `<span class="skill-tag">${s}</span>`).join('');
+
+                // QR code
+                const qrData = encodeURIComponent(c.qrCodeData || `workin-${workerId}`);
+                document.getElementById('cardQr').src =
+                    `https://api.qrserver.com/v1/create-qr-code/?size=75x75&data=${qrData}`;
+
+                // Verification stamp & badge
+                const stamp = document.getElementById('verifStamp');
+                const badge = document.getElementById('badgeVerified');
+                if (c.verificationStatus && c.verificationStatus.toLowerCase().includes('pending')) {
+                    stamp.className   = 'verification-stamp pending';
+                    stamp.textContent = '⏳ Pending Verification — OTP not yet confirmed';
+                    badge.textContent = 'Unverified';
+                    badge.style.background = 'rgba(245,158,11,0.15)';
+                    badge.style.color      = '#f59e0b';
+                    // Show OTP banner
+                    document.getElementById('otpBanner').style.display = 'block';
+                } else {
+                    stamp.textContent = `✓ ${c.verificationStatus} • Verified Work & Attendance Record`;
+                }
+
+                // Update page title
+                document.title = `${c.workerName} — Workin Labour Card`;
+
+                // Show card, hide loader
+                document.getElementById('statusBox').style.display   = 'none';
+                document.getElementById('cardContainer').style.display = 'block';
+
+            } catch (err) {
+                document.getElementById('statusBox').textContent = '❌ Failed to load card. Is the server running?';
+                console.error(err);
+            }
+        }
+
+        async function sendOTP() {
+            const phone = document.getElementById('otpPhone').value.trim();
+            if (!phone) { setOtpMsg('Please enter your phone number.', '#f59e0b'); return; }
+            try {
+                const res  = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, type: 'worker' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const devNote = data.otp_dev ? ` (Dev OTP: ${data.otp_dev})` : '';
+                    setOtpMsg(`✓ OTP sent to ${phone}${devNote}`, '#10b981');
+                } else {
+                    setOtpMsg(`❌ ${data.error}`, '#ef4444');
+                }
+            } catch (e) { setOtpMsg('Network error.', '#ef4444'); }
+        }
+
+        async function verifyOTP() {
+            const phone = document.getElementById('otpPhone').value.trim();
+            const otp   = document.getElementById('otpCode').value.trim();
+            if (!phone || !otp) { setOtpMsg('Enter phone and OTP.', '#f59e0b'); return; }
+            try {
+                const res  = await fetch('/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, otp, type: 'worker' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setOtpMsg('✅ Verified! Reloading card...', '#10b981');
+                    setTimeout(() => loadCard(), 1500);
+                } else {
+                    setOtpMsg(`❌ ${data.error}`, '#ef4444');
+                }
+            } catch (e) { setOtpMsg('Network error.', '#ef4444'); }
+        }
+
+        function setOtpMsg(msg, color) {
+            const el   = document.getElementById('otpMsg');
+            el.textContent  = msg;
+            el.style.color  = color;
+        }
+
+        loadCard();
+    </script>
+</body>
+</html>
