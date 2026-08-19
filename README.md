@@ -1,4 +1,4 @@
-# Workin (வொர்க்கின்)
+# Workin
 
 **Digital Labour Marketplace for Tamil Nadu Short-Term Workers**
 
@@ -13,12 +13,12 @@ Short-term and daily-wage workers in Tier-2/Tier-3 towns struggle to find verifi
 Workin bridges this gap with:
 - **Voice-first job posting** — employers can speak in Tamil or English to post job requirements
 - **Digital Labour Cards** — verified digital identity for workers with attendance and skill records (no numerical ratings, to avoid bias)
-- **Verified worker matching** — employers can search and match verified workers by skill and location
+- **Verified worker ** — employers can search and match verified workers by skill and location
 - **Demand forecasting** — highlights high-demand hubs across Tamil Nadu to help workers plan ahead
 
 ## ✨ Features
 
-- 🎙️ **Tamil Voice Job Posting** — speak job requirements, get a single bundled price quote
+- 🎙️ **Tamil Voice Job Posting** — speak job requirements, get a single bundled price quote all languages availabe
 - 👷 **Verified Short-Term Workers** — browse verified worker profiles via Digital Labour Card
 - 🏢 **Employer Portal** — business registration, OTP verification, job posting, and worker search
 - 📅 **Tamil Nadu Demand Forecast** — high-demand spikes across TN hubs
